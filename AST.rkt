@@ -112,7 +112,8 @@
                               (if (equal? token child-data) index #f)))))
                               
 
-
+(define (get-children-types an-ast)
+  (map AST-type (AST-children an-ast)))
 ;;;;;;;;;;;;;; CHECKERS ;;;;;;;;;;;;;;;;;;
 
 

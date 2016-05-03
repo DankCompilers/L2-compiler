@@ -23,7 +23,7 @@
 
 (define label-str "^:[a-zA-Z_][a-zA-Z_0-9]*")
 (define var-str "^[a-zA-Z_][a-zA-Z_0-9]*")
-(define num-str "\\b[1-9][0-9]*\\b")
+(define num-str "\\b(?:0|[1-9][0-9]*)\\b")
 (define a-str-only "\\b(?:rdi|rsi|rdx|r8|r9)\\b")
 (define w-str-only "\\b(?:rax|rbx|rbp|r10|r11|r12|r13|r14|r15)\\b")
 (define x-str-only "\\brsp\\b")
