@@ -49,12 +49,11 @@
 
 ;; Takes in a complete program and returns an AST
 ;; parse-program: string -> AST
-(define (parse-program raw-program)
-  (let* ([quoted-program `raw-program]
-         [program-name (first quoted-program)]
-         [ast-root (AST 'root '(,program-name) empty)])
+(define (parse-program quoted-program)
+  (let* ([program-name (first quoted-program)]
+         [ast-root (AST 'program `(,program-name) empty)])
     (if  (not (symbol? program-name)) (error "Main procedure name unspecified")
-         (set-AST-children! ast-root
+         (set-AST-children ast-root
                             (for/list ([func (rest quoted-program)])
                                       (parse-function func))))))
 
@@ -69,7 +68,7 @@
       [(not (is-label? func-name))  (lambda () (error (format "Function: Found ~a instead of label for function" func-name)))]
       [(not (number? arity))        (lambda () (error (format "Function ~a invalue arity provided" func-name)))]
       [(not (number? local-num))    (lambda () (error (format "Function ~a invalue arity provided" func-name)))]
-      [else (AST 'func '(func-name arity local-num) 
+      [else (AST 'func (list func-name arity local-num) 
                  (for/list ([instruction (get-instructions quoted-function)])
                            (parse-instruction instruction)))])))
 

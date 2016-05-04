@@ -8,19 +8,19 @@
   ;; string listof(symbols) -> string 
   (define (handle-general-case f-str args)
     (apply format (cons f-str (map ast-to-string args))))
+
+  (define (handle-collection-case start-str children)
+    (string-join (cons start-str
+                       (map ast-to-string children))
+                 #:after-last ")"))
   
   (let* ([children      (AST-children an-ast)])
       ;(printf "~a" (AST-type an-ast))
       (match (AST-type an-ast)
         ;; handles collection nodes
-        ['program              (string-join (cons (format "(~a " (get-first-data an-ast))
-                                                  (map ast-to-string children))
-                                            "\n"
-                                            #:after-last ")")]
-        ['func                 (string-join (cons (format "(~a ~a ~a " (get-first-data an-ast) (get-second-data an-ast) (get-third-data an-ast))
-                                                  (map  ast-to-string children))
-                                            "\n"
-                                            #:after-last ")")]
+        ['program              (handle-collection-case  (format "(~a" (get-first-data an-ast)) children)]
+        ['func                 (handle-collection-case  (format "(~a ~a ~a" (get-first-data an-ast) (get-second-data an-ast) (get-third-data an-ast))
+                                                        children)]
         ;; handle assignment nodes
         [(or 'mems2w
              'memmem2w

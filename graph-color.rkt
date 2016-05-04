@@ -109,11 +109,10 @@ in the first instruction’s ‘in’ set |#
              ['sopsx (let ([shifter (second (get-token-children-data i-ast))])
                        (when (not (symbol=? shifter 'rcx))
                          (add-interference graph (set))))]
-           ;; Handle live at the same time
-           (if (= i 0)
-               (set! graph (add-interference graph in))
-               (set! graph (add-interference graph out)))
-           ;; Handle the interference between kill and out
-           (add-interference (set-union kill out)))))
+             ;; Handle live at the same time
+             (if (= i 0)
+                 (set! graph (add-interference graph in))
+                 (set! graph (add-interference graph out)))
+             ;; Handle the interference between kill and out
+             (add-interference (set-union kill out)))))
     graph))
-(color-graph-function (current-command-line-arguments))

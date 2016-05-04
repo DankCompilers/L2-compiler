@@ -64,6 +64,67 @@
   (debug-print "Finished arithmetic node tests")
 
   ;; test assignment nodes
+  (test-backend parse-instruction '(nien <- 6))
+  (test-backend parse-instruction '(nien <- tien))
+  (test-backend parse-instruction '(rax <- 6))
+  (test-backend parse-instruction '(nien <- (mem rsp 8)))
+  (test-backend parse-instruction '((mem rsp 8) <- 6))
+  (test-backend parse-instruction '((mem rsp 8) <- :hello))
+  (test-backend parse-instruction '((mem rsp 8) <- rax))
+  (test-backend parse-instruction '(nien <- t5 = t7))
   (debug-print "Finished assignment node tests")
+
+  ;; test collection nodes
+  (test-backend parse-function    `(:go 1 0
+                                         (x2 <- rdi) 
+                                         (x2 *= x2) 
+                                         (dx2 <- x2) 
+                                         (dx2 *= 2) 
+                                         (tx <- rdi)
+                                         :hello
+                                         (tx *= 3) 
+                                         (rax <- dx2) 
+                                         (rax += tx)
+                                         :again
+                                         (rax += 4) 
+                                         (return)))
+
+   (test-backend parse-function    `(:go 0 0
+                                         (u <- 0) 
+                                         (d <- rdi) 
+                                         :top 
+                                         (cjump d = 0 :z :nz)
+                                         :z 
+                                         (rax <- u) 
+                                         (return) 
+                                         :nz 
+                                         (u += 1) 
+                                         (d -= 1) 
+                                         (goto :top)))
+
+  (test-backend parse-program    `(:go  (:go 0 0
+                                         (u <- 0) 
+                                         (d <- rdi) 
+                                         :top 
+                                         (cjump d = 0 :z :nz)
+                                         :z 
+                                         (rax <- u) 
+                                         (return) 
+                                         :nz 
+                                         (u += 1) 
+                                         (d -= 1) 
+                                         (goto :top))
+                                        (:hello 0 0
+                                         (u <- 0) 
+                                         (d <- rdi) 
+                                         :top 
+                                         (cjump d = 0 :z :nz)
+                                         :z 
+                                         (rax <- u) 
+                                         (return) 
+                                         :nz 
+                                         (u += 1) 
+                                         (d -= 1) 
+                                         (goto :top))))
   (debug-print "Finished collection node tests"))
   

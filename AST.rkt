@@ -293,3 +293,15 @@
 ;; is-label-node?: AST -> bool
 (define (is-cmp-node? an-ast)
   (is-type-node? an-ast 'cmp))
+
+
+;; checks if AST is label node
+;; is-label-node?: AST -> bool
+(define (is-stack-node? an-ast)
+  (is-type-node? an-ast 'stack))
+
+
+;; checks if AST is label node
+;; is-label-node?: AST -> bool
+(define (is-memstack-node? an-ast)
+  (is-type-node? an-ast 'memstack2w))
