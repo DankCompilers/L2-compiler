@@ -1,7 +1,7 @@
 #lang racket
 
 (require "AST.rkt" "parser.rkt")
-(provide generate-in-out generate-gen-kill generate-successors search-for-label-instr)
+(provide liveness-analysis generate-in-out generate-gen-kill generate-successors search-for-label-instr)
 
 
 ;;;;;;;;;;;;;;;;;;; DISPLAY-HELPERS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -26,7 +26,7 @@
          [successors   (generate-successors function-ast)]
          [ins-outs     (generate-in-out gens kills successors)]
          [ins          (first ins-outs)]
-         [outs         (second outs)])
+         [outs         (second ins-outs)])
     (gens kills successors ins outs)))
 
 

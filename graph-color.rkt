@@ -1,6 +1,7 @@
 #lang racket
 
 (require "lib.rkt" "liveness.rkt" "AST.rkt")
+(provide allocate-function)
 
 ;; Overview:
 ;; The process is that we generate a graph first, then color it by trying to assign each variable a register
@@ -19,6 +20,10 @@
 ;; These register names also serve as the color names
 (define all-registers (set 'r8 'r9 'r10 'r11 'r12 'r13 'r14 'r15 'rbp 'rbx 'rdi 'rsi 'rdx 'rcx 'rax))
 
+
+;; func-ast insets outsets killsets -> colored-graph/id
+(define (allocate-function func-ast ins outs kills)
+  (color-graph-function (generate-graph-function ins outs kills func-ast)))
 
 ;; interference-graph -> colored-graph/id to spill
 (define (color-graph-function interference-graph)

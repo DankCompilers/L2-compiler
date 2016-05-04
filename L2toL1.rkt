@@ -1,7 +1,7 @@
 #lang racket
 
 
-(require "parser.rkt" "AST.rkt" "liveness.rkt" "backend.rkt")
+(require "parser.rkt" "AST.rkt" "liveness.rkt" "backend.rkt" "graph-color.rkt" "spill.rkt")
 (provide L2-to-L1-driver)
 
 
@@ -27,7 +27,7 @@
            [successors     (third liveness-data)]
            [ins            (fourth liveness-data)]
            [outs           (fifth liveness-data)]
-           [colored-graph  (allocate-function ins outs kills func-ast)])
+           [colored-graph  (allocate-function func-ast ins outs kills)])
       (match colored-graph
         ;; graph is a variable id to spill, so spill it and reanalyze
         [symbol?     (analyze-func-ast (spill-function colored-graph spill-prefix func-ast gens kills))]
