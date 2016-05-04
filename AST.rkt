@@ -28,9 +28,13 @@
 
 ;;;;;;;;;;;;;; FACTORY HELPERS ;;;;;;;;;;;;;;;;;;
 
-;; x n8 -> AST
-(define (make-mem-node x n8)
-  (AST 'mem (list x n8) empty))
+;; x-AST num-AST -> AST
+(define (make-mem-node x-ast n8-ast)
+  (AST 'mem '() (list x-ast  n8-ast)))
+
+;; x8 -> AST
+(define (make-stack-node n8-ast)
+  (AST 'stack '() (list n8-ast)))
 
 
 ;; cmp t t -> AST
@@ -51,7 +55,19 @@
 ;;;;;;;;;;;;;; ACCESSOR HELPERS ;;;;;;;;;;;;;;;;;;
 
 
-;; AST -> listof AST
+;; returns a copy of an-ast with the children replaced with new-children
+;; AST -> AST
+(define (set-AST-children an-ast new-children)
+  (AST (AST-type an-ast) (AST-data an-ast) new-children))
+
+;; returns a copy of an-ast with the data replaced with new-data
+;; AST -> AST
+(define (set-AST-data an-ast new-data)
+  (AST (AST-type an-ast) new-data (AST-children an-ast)))
+  
+
+
+;; quoted-func -> listof AST
 (define (get-instructions quoted-func)
   (rest (rest (rest quoted-func))))
 

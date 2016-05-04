@@ -20,7 +20,7 @@
          [mem-location       (calculate-spillage function-ast)]
          [temp-count -1]
          [next-temp (lambda () (set! temp-count (+ temp-count 1))
-                      (string->symbol (format "~a~a" prefix temp-count)))])
+                      (string->symbol (format "~a~a~a" prefix var-name temp-count)))])
     ;; returns basically a copy of the function ast with
     (AST (AST-type function-ast)
          ;; change the number of locals
@@ -177,9 +177,9 @@
   (test-spill-instruction `(tail-call :alabel 2) 'raxor `((tail-call :alabel 2)))
   
   ;; test simple ones
-  ;(test-spill-instruction `(goto :label)  'a  `((goto :label)))
-  ;(test-spill-instruction `(call print 1) 'print  `((call print 1)))
-  ;(test-spill-instruction `(call allocate 2) 'allocate  `((call allocate 2)))
-  ;(test-spill-instruction `(call array-error 2) 'p  `((call array-error 2)))
-  ;(test-spill-instruction `(return) 'return  `((return)))
+  (test-spill-instruction `(goto :label)  'a  `((goto :label)))
+  (test-spill-instruction `(call print 1) 'print  `((call print 1)))
+  (test-spill-instruction `(call allocate 2) 'allocate  `((call allocate 2)))
+  (test-spill-instruction `(call array-error 2) 'p  `((call array-error 2)))
+  (test-spill-instruction `(return) 'return  `((return)))
   )
