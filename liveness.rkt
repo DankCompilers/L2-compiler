@@ -92,12 +92,12 @@
     (for/list  ([inst-num (range num-instructions)])
              (let ([instr (ast-child function-ast inst-num)])
                (match (AST-type instr)
-                 ['goto         (let  ([found (search-for-label-instr function-ast (get-first-data instr))])
+                 ['goto         (let  ([found (search-for-label-instr function-ast (get-first-data (get-first-child instr)))])
                                   (if (number? found)
                                       (list found)
                                       (lambda () (error (format "goto instruction with invalid label ~a" (get-first-data instr))))))]
-                 ['cjump        (let  ([found1 (search-for-label-instr function-ast (get-first-data instr))]
-                                       [found2 (search-for-label-instr function-ast (get-second-data instr))])
+                 ['cjump        (let  ([found1 (search-for-label-instr function-ast (get-first-data (ast-child instr  3)))]
+                                       [found2 (search-for-label-instr function-ast (get-first-data (ast-child instr  4)))])
                                   ;(printf "~a ~a" found1 found2)
                                   ;(printf "~a ~a" (get-first-data instr) (get-second-data instr))
                                   (if (or (not (number? found1)) (not (number? found2)))
@@ -135,32 +135,37 @@
         ['mems2w    (list (if (is-tracked? (ast-child i-ast 1))
                               (set (second c-data)) (set))
                           (set (first c-data)))]
-        ;; kill w
-        ['memmem2w  (list (set)
+        ;; kill w. gen x used in mem
+        ['memmem2w  (list (set (get-first-data (get-first-child (get-second-child i-ast))))
                           (set (first c-data)))]
-        ;; if s is tracked, put in gen
+        ;; if s is tracked, put in gen. gen mem x
         ['mems2mem   (list (if (is-tracked? (ast-child i-ast 1))
-                              (set (first c-data)) (set))
+                               (set (first c-data) (get-first-data (get-first-child (get-first-child i-ast))))
+                               (set (get-first-data (get-first-child (get-first-child i-ast)))))
                            (set))]
         ;; if t1, t2 tracked, put in gen. kill w.
-        ['memcmp2w   (let ([t1-tracked (is-tracked? (ast-child i-ast 2))]
+        ['memcmp2w   (let  ([t1-tracked (is-tracked? (ast-child i-ast 1))]
                             [t2-tracked (is-tracked? (ast-child i-ast 3))]
-                            [t1 (third c-data)]
+                            [t1 (second c-data)]
                             [t2 (fourth c-data)])
                        
-                            (list (cond
+                            (list (cond ;; determines gen set
                                     [(and t1-tracked t2-tracked) (set t1 t2)]
                                     [t1-tracked (set t1)]
                                     [t2-tracked (set t2)]
                                     [else (set)])
                                   (set (first c-data))))]
         ;; gen w (left). if t is tracked, gen. Kill w
-        ['aop       (list (if (is-tracked? (ast-child i-ast 1))
-                              (set (first c-data) (second c-data))
-                              (set (first c-data)))
-                          (set (first c-data)))]
+        ['aop        (let  ([t2-tracked (is-tracked? (ast-child i-ast 2))]
+                            [t1 (first c-data)]
+                            [t2 (third c-data)])
+                       
+                       (list (cond ;; determines gen set
+                                    [t2-tracked (set t1 t2)]
+                                    [else (set t1)])
+                                  (set (first c-data))))]
         ;; gen w, rcx. kill w. 
-        ['sopsx     (list (set (first c-data) (second c-data))
+        ['sopsx     (list (set (first c-data) (third c-data))
                           (set (first c-data)))]
         ;; gen w. kill w.
         ['sopn      (list (set (first c-data))
@@ -168,9 +173,9 @@
         ;; all empty
         [(or 'label  'goto)   (list (set) (set))]
         ;; if either t is tracked, gen. kill nothing
-        ['cjump       (let ([t1-tracked (is-tracked? (ast-child i-ast 1))]
+        ['cjump       (let ([t1-tracked (is-tracked? (ast-child i-ast 0))]
                             [t2-tracked (is-tracked? (ast-child i-ast 2))]
-                            [t1 (second c-data)]
+                            [t1 (first c-data)]
                             [t2 (third c-data)])
                        
                             (list (cond

@@ -13,7 +13,7 @@
   (when print-debug (apply printf (append (list str) args))))
 
 
-
+#|
 ;; test in out sets
 (module+ test
   (require rackunit)
@@ -93,7 +93,7 @@
 
   (debug-print "Finished in out tests"))
 
-
+|#
 
 
 
@@ -138,12 +138,12 @@
   (test-gen-kill `(tx <- rdi) (list (set 'rdi)      (set 'tx)))
 
   ;; memmem2w
-  (test-gen-kill `(x2 <- (mem rsp 0)) (list (set)      (set 'x2)))
-  (test-gen-kill `(rdi <- (mem rsp 64)) (list (set)    (set 'rdi)))
+  (test-gen-kill `(x2 <- (mem rsp 0)) (list (set 'rsp)      (set 'x2)))
+  (test-gen-kill `(rdi <- (mem rsp 64)) (list (set 'rsp)    (set 'rdi)))
 
   ;;mems2mem
-  (test-gen-kill `((mem rsp 24) <- rdi) (list (set 'rdi)     (set)))
-  (test-gen-kill `((mem rsp -8) <- x2) (list (set 'x2)       (set)))
+  (test-gen-kill `((mem rsp 24) <- rdi) (list (set 'rsp 'rdi)     (set)))
+  (test-gen-kill `((mem rsp -8) <- x2)  (list (set 'rsp 'x2)       (set)))
   
   ;;memcmp2w
   (test-gen-kill `(x2 <- x2 < x2) (list (set 'x2)         (set 'x2)))

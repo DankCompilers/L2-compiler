@@ -78,18 +78,21 @@
 ;; parse-instruction: quoted -> AST
 (define (parse-instruction quoted-instruction)
     (match quoted-instruction
-      [`(,(? is-w? w) <- (mem ,(? is-x? x) ,n8))             (AST 'memmem2w '()    (list (parse-token w)   (make-mem-node x n8)) )]
-      [`((mem ,(? is-x? x) ,n8) <- ,(? is-s? s))             (AST 'mems2mem '()    (list (make-mem-node x n8) (parse-token s)) )]
-      [`(,(? is-w? w) <- ,(? is-t? t1) ,cmp ,(? is-t? t2))   (AST 'memcmp2w '()    (parse-tokens w cmp t1 t2) )]
+      [`(,(? is-w? w) <- (mem ,(? is-x? x) ,n8))             (AST 'memmem2w '()    (list (parse-token w)   (make-mem-node (parse-token x)
+                                                                                                                          (parse-token n8))))]
+      [`((mem ,(? is-x? x) ,n8) <- ,(? is-s? s))             (AST 'mems2mem '()    (list (make-mem-node (parse-token x) (parse-token n8))
+                                                                                         (parse-token s)))]
+      [`(,(? is-w? w) <- ,(? is-t? t1) ,cmp ,(? is-t? t2))   (AST 'memcmp2w '()    (parse-tokens w t1 cmp t2))]
+      [`(,(? is-w? w) <- (stack-arg ,n8))                    (AST 'memstack2w '()  (list (parse-token w) (make-stack-node (parse-token n8))))]
       ;; this mem has to go last since it's the most general
       [`(,(? is-w? w) <- ,(? is-s? s))                       (AST 'mems2w   '()    (parse-tokens w s) )]
-      [`(,(? is-w? w) ,(? is-aop? aop) ,(? is-t? t))         (AST 'aop      (list aop) (parse-tokens w t)  )]
-      [`(,(? is-w? w) ,(? is-sop? sop) ,(? is-sx? sx))       (AST 'sopsx    (list sop) (parse-tokens w sx) )]
-      [`(,(? is-w? w) ,(? is-sop? sop) ,(? number? n))       (AST 'sopn     (list sop) (parse-tokens w n)  )]
+      [`(,(? is-w? w) ,(? is-aop? aop) ,(? is-t? t))         (AST 'aop      '()    (parse-tokens w aop t)  )]
+      [`(,(? is-w? w) ,(? is-sop? sop) ,(? is-sx? sx))       (AST 'sopsx    '()    (parse-tokens w sop sx) )]
+      [`(,(? is-w? w) ,(? is-sop? sop) ,(? number? n))       (AST 'sopn     '()    (parse-tokens w sop n)  )]
       [(? is-label? l)                                       (parse-token l)]
-      [`(goto ,(? is-label? l))                              (AST 'goto (list l) (parse-tokens l) )]
+      [`(goto ,(? is-label? l))                              (AST 'goto     '()    (parse-tokens l))]
       [`(cjump  ,(? is-t? t1) ,cmp ,(? is-t? t2)  ,(? is-label? l1) ,(? is-label? l2))
-                                                             (AST 'cjump (list l1 l2) (parse-tokens cmp t1 t2 l1 l2) )]
+                                                             (AST 'cjump    '()    (parse-tokens t1 cmp t2 l1 l2) )]
       [`(call print ,(? number? n))                             (if (= n 1)
                                                                  (AST 'print '() (parse-tokens 1) )
                                                                  (lambda () (error "print call with wrong arity")))]
@@ -105,7 +108,6 @@
       [`(tail-call ,(? is-u? u) ,(? number? nat))               (if (and (>= nat 0) (<= nat 6))
                                                                  (AST 'tail-call '() (parse-tokens u nat) )
                                                                  (lambda () (error "tail call with invalid arity")))]
-      [`(,(? is-w? w) <- (stack-arg ,n8))                      (AST 'memstack2w '() (list (parse-token w) (make-stack-node n8)))]
       [`(return)                                              (AST 'return '() '() )]
       [_ (lambda () (error "instruction did not match any cases"))]))
 
@@ -119,6 +121,8 @@
     [(? number?)           (make-token-node 'num token)]
     [(? is-label?)         (make-token-node 'label token)]
     [(? is-cmp?)           (make-token-node 'cmp token)]
+    [(? is-aop?)           (make-token-node 'aopop token)]
+    [(? is-sop?)           (make-token-node 'sopop token)]
     [(? is-sx-only?)       (make-token-node 'sx token)]
     [(? is-a-only?)        (make-token-node 'a token)]
     [(? is-w-only?)        (make-token-node 'w token)]

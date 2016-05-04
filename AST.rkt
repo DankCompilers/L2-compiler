@@ -76,11 +76,11 @@
   (list-ref (AST-children ast) pos))
 
 ;; AST -> AST
-(define (first-ast-child ast)
+(define (get-first-child ast)
   (ast-child ast 0))
 
 ;; AST nat -> AST
-(define (second-ast-child ast)
+(define (get-second-child ast)
   (ast-child ast 1))
 
 ;; AST -> listof AST
@@ -181,7 +181,7 @@
 ;; AST -> bool
 (define (is-token-node? token-ast)
   (match (AST-type token-ast)
-    [(or 'num 'label 'var 'sx 'a 'w' x' 's 't 'u 'cmp) #t]
+    [(or 'num 'label 'var 'sx 'a 'w' x' 's 't 'u 'cmp 'sopop 'aopop) #t]
     [_ #f]))
 
 
