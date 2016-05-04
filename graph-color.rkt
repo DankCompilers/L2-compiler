@@ -37,15 +37,15 @@
 
   ;; for each node, if it's a register, color it as itself. Else, put false as uncolored.
   (define (get-initial-colored-graph)
-    (make-hash (map (lambda (key) (list key (if (set-contains? all-registers key) key #f))))))
-  
+    (make-hash (map (lambda (key) (list key (if (set-member? all-registers key) key #f))))))
+
   (define (generate-evaluation-order)
-    (sort (hash-map (lambda (key value) (list key value)) interference-map)
-          #:key second number<?))
-  
+    (sort (hash-map interference-graph (lambda (key value) (list key value)))
+          #:key second < ))
+
   ;; gets a list of variables ordered by number of edges
   (let ([evaluation-order (generate-evaluation-order)]
-        [colored-graph  (get-inital-colored-graph)])
+        [colored-graph  (get-initial-colored-graph)])
     (for ([id-edges evaluation-order]
           #:break (not (hash? colored-graph)))
          (let ([id         (first id-edges)]
@@ -53,7 +53,7 @@
            (cond
              [(> num-edges (length all-registers)) (set! colored-graph id)] ;; set it to the id to spill it
              ;; when a variable does not have a color assigned, assign a register that is not in its interference set
-             [else (when (not (symbol? (hash-ref colored-graph variable)))
+             [else (when (not (symbol? (hash-ref colored-graph id)))
                      (let ([chosen-color (choose-color colored-graph id)])
                        (if (symbol? chosen-color)
                            (set! colored-graph (hash-set colored-graph id chosen-color))
@@ -111,3 +111,4 @@ in the first instruction’s ‘in’ set |#
            ;; Handle the interference between kill and out
            (add-interference (set-union kill out)))))
     graph))
+(color-graph-function (current-command-line-arguments))
