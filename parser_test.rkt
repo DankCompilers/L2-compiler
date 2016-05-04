@@ -87,6 +87,7 @@
   (printf "Done with memcmp2w tests\n\n")
   
   ;; simple instructions
+  (check-equal-print (parse-instruction '(cjump t1 < t2 :hello :badplace)) (AST 'cjump '() (parse-tokens 't1 '< 't2 ':hello ':badplace)))
   (check-equal-print (parse-instruction ':hello) (parse-token ':hello))
   (check-equal-print (parse-instruction `(goto :hello)) (AST 'goto '() (parse-tokens  ':hello)))
   (check-equal-print (parse-instruction `(call array-error 2)) (AST 'array-error empty (parse-tokens 2)))

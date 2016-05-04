@@ -233,6 +233,16 @@
 
 ;;; Token node checkers ;;;
 
+;; checks if AST is program node
+;; is-label-node?: AST -> bool
+(define (is-program-node? an-ast)
+  (is-type-node? an-ast 'program))
+
+;; checks if AST is program node
+;; is-label-node?: AST -> bool
+(define (is-function-node? an-ast)
+  (is-type-node? an-ast 'func))
+
 
 ;; checks if AST is label node
 ;; is-label-node?: AST -> bool

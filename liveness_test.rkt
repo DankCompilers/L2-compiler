@@ -13,7 +13,7 @@
   (when print-debug (apply printf (append (list str) args))))
 
 
-#|
+
 ;; test in out sets
 (module+ test
   (require rackunit)
@@ -92,9 +92,6 @@
                                        (()(x)()())))
 
   (debug-print "Finished in out tests"))
-
-|#
-
 
 
 

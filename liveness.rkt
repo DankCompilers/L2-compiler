@@ -4,7 +4,6 @@
 (provide generate-in-out generate-gen-kill generate-successors search-for-label-instr)
 
 
-
 ;;;;;;;;;;;;;;;;;;; DISPLAY-HELPERS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (print-set a-set)
@@ -19,15 +18,16 @@
 
 ;;;;;;;;;;;;;;;;;;; LIVENESS-ANALYSIS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; string -> listof (insets outsets)
-(define (liveness raw-function)
-  (let* ([function-ast (parse-function `raw-function)]
-         [gen-kills    (map generate-gen-kill (AST-children function-ast))]
+;; string -> listof(gensets killsets successorslists insets outsets)
+(define (liveness-analysis function-ast)
+  (let* ([gen-kills    (map generate-gen-kill (AST-children function-ast))]
          [gens         (map (lambda (gen-kill) (first gen-kill)) gen-kills)]
          [kills        (map (lambda (gen-kill) (second gen-kill)) gen-kills)]
          [successors   (generate-successors function-ast)]
-         [in-outs      (generate-in-out gens kills successors)])
-    empty))
+         [ins-outs     (generate-in-out gens kills successors)]
+         [ins          (first ins-outs)]
+         [outs         (second outs)])
+    (gens kills successors ins outs)))
 
 
 ;;;;;;;;;;;;;;;;;;; IN OUT SETS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
