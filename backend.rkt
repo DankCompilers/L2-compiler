@@ -4,7 +4,8 @@
 (provide ast-to-string)
 
 ;; AST -> string
-(define (ast-to-string an-ast)
+(define/contract (ast-to-string an-ast)
+  (-> AST? string?)
   ;; string listof(symbols) -> string 
   (define (handle-general-case f-str args)
     (apply format (cons f-str (map ast-to-string args))))
@@ -19,7 +20,10 @@
       (match (AST-type an-ast)
         ;; handles collection nodes
         ['program              (handle-collection-case  (format "(~a" (get-first-data an-ast)) children)]
-        ['func                 (handle-collection-case  (format "(~a ~a ~a" (get-first-data an-ast) (get-second-data an-ast) (get-third-data an-ast))
+        ['func                 (handle-collection-case  (format "(~a ~a ~a"
+                                                                (get-first-data an-ast)
+                                                                (get-second-data an-ast)
+                                                                (get-third-data an-ast))
                                                         children)]
         ;; handle assignment nodes
         [(or 'mems2w
@@ -50,4 +54,4 @@
              'aopop
              'sopop)              (to-string (get-first-data an-ast))]
         [_                      (if (is-reg-node? an-ast) (to-string (get-first-data an-ast))
-                                    (lambda () (error "generate-gen-kill: could not understand ~a" an-ast)))])))
+                                    (error "ast-to-string: could not understand ~a" an-ast))])))

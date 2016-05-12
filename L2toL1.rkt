@@ -18,7 +18,8 @@
 
 ;; Consumes an L2 program string and returns the related L1 program string
 ;; string? -> string?
-(define (L2-to-L1-compiler raw-L2)
+(define/contract (L2-to-L1-compiler raw-L2)
+  ;;(-> (or/c string? AST?) string?)
   (cond
     [(string? raw-L2)                                (ast-to-string (L2-to-L1 (parse-program raw-L2)))]
     [(and (AST? raw-L2) (is-program-node? raw-L2))   (ast-to-string (L2-to-L1 raw-L2))]
@@ -34,7 +35,7 @@
                               (let* ([analysis       (analyze-func-ast func-ast)]
                                      [new-func-ast   (first analysis)]
                                      [colored-graph  (second analysis)])
-                                (process-func new-func-ast colored-graph)))))
+                                (process-func-ast new-func-ast colored-graph)))))
 
 
 ;; Performs liveness analysis, register allocation, spilling, and then returns
@@ -61,7 +62,7 @@
 ;; Iterate through intructions and replace variable uses with their allocated register
 ;; and also change stack nodes to mem nodes
 ;; func-AST colored-graph -> func-AST
-(define (process-func func-ast colored-graph)
+(define (process-func-ast func-ast colored-graph)
   ;; Replaces variable nodes with register nodes and stack nodes with mem nodes
   ;; AST -> AST
   (define (child-replace child-ast)

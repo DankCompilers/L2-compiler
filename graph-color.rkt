@@ -14,7 +14,7 @@
 ;; - Colors: The colors are simply the registers
 ;; - Initial graph: The initial graph is empty except for registers, all of which interfere with each other
 ;; - interference graph: A graph that goes through a program and builds the conflict sets for all registers/variables
-;; - Colored graph: A graph that maps from IDs to register IDs
+;; - Colored graph: A hash that maps from IDs to register IDs
 
 
 ;; These register names also serve as the color names

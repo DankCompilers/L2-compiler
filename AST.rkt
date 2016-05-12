@@ -3,7 +3,10 @@
 (provide (all-defined-out))
 ;;;;;;;;;;;;;; STRUCT DEFINITION ;;;;;;;;;;;;;;;;;;
 
-(struct AST (type data children)
+(define-struct/contract AST
+  ([type     (or/c ]
+   [data     any/c]
+   [children any/c])
   #:transparent
   #:mutable)
 

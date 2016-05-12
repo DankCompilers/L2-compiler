@@ -3,7 +3,7 @@
 (require "AST.rkt" "parser.rkt" "backend.rkt" "lib.rkt")
 
 
-(define print-debug #f)
+(define print-debug #t)
 
 (define (debug-printer proc . args)
   (when print-debug (printf "given:    ~a\nexpected: ~a\n\n" (first args) (last args)))
