@@ -27,7 +27,8 @@
          [ins-outs     (generate-in-out gens kills successors)]
          [ins          (first ins-outs)]
          [outs         (second ins-outs)])
-    (gens kills successors ins outs)))
+   `(      (in ,@(map (lambda (setInput) (sort (set->list setInput) symbol<?)) ins) )
+           (out ,@(map (lambda (setInput) (sort (set->list setInput) symbol<?)) outs)))))
 
 
 ;;;;;;;;;;;;;;;;;;; IN OUT SETS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
