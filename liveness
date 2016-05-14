@@ -1,0 +1,4 @@
+#!/bin/bash
+
+racket $(dirname $0)/liveness_run_func.rkt "$@"
+
