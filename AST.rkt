@@ -4,7 +4,7 @@
 ;;;;;;;;;;;;;; STRUCT DEFINITION ;;;;;;;;;;;;;;;;;;
 
 (define-struct/contract AST
-  ([type     (or/c ]
+  ([type     any/c ]
    [data     any/c]
    [children any/c])
   #:transparent
