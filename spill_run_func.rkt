@@ -1,7 +1,8 @@
 #lang racket
 (require "./parser.rkt")
 (require "./spill.rkt")
-(require "./liveness")
+(require "./liveness.rkt")
+(require "./AST.rkt")
 (require racket/cmdline)
 (command-line
  #:program "spill function"
@@ -9,15 +10,19 @@
  (cond [filename
         (call-with-input-file filename
          (lambda (in)
-           (let* ([spillFileReturn (spillFile (read in))]
-                  [functionAST (parse-function (car spillFileReturn))]
-                  [spillVar (car(rest spillFileReturn))]
-                  [spillPref (rest(rest spillFileReturn))]
-                  [gen-kill (generate-gen-kill functionAST)])
-         (write  (spill-function spillVar spillPref (car gen-kill) (rest gen-kill))))))]
+           (let*
+                 ([functionAST (parse-function (read in))]
+                  [spillVar (read in)]
+                  [spillPref (read in)]
+                  [instructions-count (num-children functionAST)]
+                  [gen  `()]
+                  [kill `()])
+                 (begin
+                     (for ([i (range instructions-count)])
+                          (let* ([gen-kill-singleton-before (ast-child functionAST i)]
+                                [gen-kill-singleton (set->list (generate-gen-kill gen-kill-singleton-before))])
+                                (begin (set! gen (append gen (car gen-kill-singleton)))
+                                        (set! kill (append kill (rest gen-kill-singleton))))))
+                    (write  (spill-function spillVar spillPref functionAST gen kill))))))]
       [else (error "Provide a filename bitch!")]))
-
-(define (spillFile fileInput)
- (let * ([fileList (file->list fileInput)])
-  fileList))
 
