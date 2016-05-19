@@ -11,7 +11,7 @@
 
 ;; AST -> NAT
 (define (calculate-spillage func-ast)
-  (let ([arg-places (if (> (get-first-data func-ast) 6)
-                        (- (get-first-data func-ast) 6)
+  (let ([arg-places (if (> (get-second-data func-ast) 6)
+                        (- (get-second-data func-ast) 6)
                         0)])
-    (* 8 (+ arg-places (get-second-data func-ast)))))
+    (* 8 (+ arg-places (get-third-data func-ast)))))
