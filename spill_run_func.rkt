@@ -20,9 +20,16 @@
                  (begin
                      (for ([i (range instructions-count)])
                           (let* ([gen-kill-singleton-before (ast-child functionAST i)]
-                                [gen-kill-singleton (set->list (generate-gen-kill gen-kill-singleton-before))])
-                                (begin (set! gen (append gen (car gen-kill-singleton)))
-                                        (set! kill (append kill (rest gen-kill-singleton))))))
-                    (write  (spill-function spillVar spillPref functionAST gen kill))))))]
+                                 [gen-kill-singleton (set->list (generate-gen-kill gen-kill-singleton-before))])
+                                (begin (set! gen  (append gen  (set->list (first gen-kill-singleton))))
+                                       (set! kill (append kill (set->list (second gen-kill-singleton)))))))
+                     ;;Writing to test
+                     ;;(write gen)
+                     ;;(write kill)
+                     ;;(write spillPref)
+                     ;;(write spillVar)
+                     ;;(write functionAST)
+                     ;;Writing output to io
+                     (write  (spill-function spillVar spillPref functionAST gen kill))))))]
       [else (error "Provide a filename bitch!")]))
 
