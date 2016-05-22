@@ -91,10 +91,141 @@
   (test-in-outs TEST-FUNC-INF-LOOP   `((()()(x)())
                                        (()(x)()())))
 
+  (test-in-outs (parse-function `(:go
+                  0 0
+                  (rdi <- 5)
+                  (call print 1)
+                  (return)) )               `(((r12 r13 r14 r15 rbp rbx) 
+                                               (r12 r13 r14 r15 rbp rbx rdi) 
+                                               (r12 r13 r14 r15 rax rbp rbx)) 
+                                              
+                                              ((r12 r13 r14 r15 rbp rbx rdi) 
+                                               (r12 r13 r14 r15 rax rbp rbx) 
+                                               ())))
+
+
+  (debug-print "****************** 9/10f ******************\n")
+
+  (test-in-outs (parse-function `(:f
+                                  2 0
+                                  (a <- (mem rdi 0))
+                                  (a += 1)
+                                  (y <- rdi)
+                                  (m <- rsi)
+                                  (rdi <- a)
+                                  (rsi <- (mem y 8))
+                                  (call allocate 2)
+                                  (a <- rax)
+                                  (y <- (mem a 0))
+                                  (a += y)
+                                  (y <- (mem rsp 0))
+                                  ((mem a 0) <- y)
+                                  (return)))               `(((r12 r13 r14 r15 rbp rbx rdi rsi) 
+                                                            (a r12 r13 r14 r15 rbp rbx rdi rsi) 
+                                                            (a r12 r13 r14 r15 rbp rbx rdi rsi) 
+                                                            (a r12 r13 r14 r15 rbp rbx rsi y) 
+                                                            (a r12 r13 r14 r15 rbp rbx y) 
+                                                            (r12 r13 r14 r15 rbp rbx rdi y) 
+                                                            (r12 r13 r14 r15 rbp rbx rdi rsi) 
+                                                            (r12 r13 r14 r15 rax rbp rbx) 
+                                                            (a r12 r13 r14 r15 rax rbp rbx) 
+                                                            (a r12 r13 r14 r15 rax rbp rbx y) 
+                                                            (a r12 r13 r14 r15 rax rbp rbx) 
+                                                            (a r12 r13 r14 r15 rax rbp rbx y) 
+                                                            (r12 r13 r14 r15 rax rbp rbx))
+
+                                                             ((a r12 r13 r14 r15 rbp rbx rdi rsi)
+                                                             (a r12 r13 r14 r15 rbp rbx rdi rsi)
+                                                             (a r12 r13 r14 r15 rbp rbx rsi y)
+                                                             (a r12 r13 r14 r15 rbp rbx y)
+                                                             (r12 r13 r14 r15 rbp rbx rdi y)
+                                                             (r12 r13 r14 r15 rbp rbx rdi rsi)
+                                                             (r12 r13 r14 r15 rax rbp rbx)
+                                                             (a r12 r13 r14 r15 rax rbp rbx)
+                                                             (a r12 r13 r14 r15 rax rbp rbx y)
+                                                             (a r12 r13 r14 r15 rax rbp rbx)
+                                                             (a r12 r13 r14 r15 rax rbp rbx y)
+                                                             (r12 r13 r14 r15 rax rbp rbx) ())))
+
+
+  (test-in-outs (parse-function `(:g
+                                  1 1
+                                  (cjump rdi = 1 :true :false)
+                                  :true
+                                  (rax <- 5)
+                                  (return)
+                                  :false
+                                  (x <- rdi)
+                                  (rdi -= 1)
+                                  ((mem rsp -8) <- :g_recur)
+                                  (call :g 1)
+                                  (rdi <- x)
+                                  (rax += rdi)
+                                  (return)))                                        `(((r12 r13 r14 r15 rbp rbx rdi)
+                                                                                      (r12 r13 r14 r15 rbp rbx)
+                                                                                      (r12 r13 r14 r15 rbp rbx)
+                                                                                      (r12 r13 r14 r15 rax rbp rbx)
+                                                                                      (r12 r13 r14 r15 rbp rbx rdi)
+                                                                                      (r12 r13 r14 r15 rbp rbx rdi)
+                                                                                      (r12 r13 r14 r15 rbp rbx rdi x)
+                                                                                      (r12 r13 r14 r15 rbp rbx rdi x)
+                                                                                      (r12 r13 r14 r15 rbp rbx rdi x)
+                                                                                      (r12 r13 r14 r15 rax rbp rbx x)
+                                                                                      (r12 r13 r14 r15 rax rbp rbx rdi)
+                                                                                      (r12 r13 r14 r15 rax rbp rbx))
+                                                                                     
+                                                                                     ((r12 r13 r14 r15 rbp rbx rdi)
+                                                                                      (r12 r13 r14 r15 rbp rbx)
+                                                                                      (r12 r13 r14 r15 rax rbp rbx)
+                                                                                      ()
+                                                                                      (r12 r13 r14 r15 rbp rbx rdi)
+                                                                                      (r12 r13 r14 r15 rbp rbx rdi x)
+                                                                                      (r12 r13 r14 r15 rbp rbx rdi x)
+                                                                                      (r12 r13 r14 r15 rbp rbx rdi x)
+                                                                                      (r12 r13 r14 r15 rax rbp rbx x)
+                                                                                      (r12 r13 r14 r15 rax rbp rbx rdi)
+                                                                                      (r12 r13 r14 r15 rax rbp rbx)
+                                                                                      ())))
+
+
+
+  (debug-print "****************** 26/15f ******************\n")
+  (test-in-outs  (parse-function `(:main
+                                   0 0
+                                   (s <- 0)
+                                   (cjump 1 < 2 :t :f)
+                                   :t
+                                   (a <- :fun)
+                                   (tail-call a 0)
+                                   :f
+                                   (rax <- s)
+                                   (return)))                            `(((r12 r13 r14 r15 rbp rbx)
+                                                                           (r12 r13 r14 r15 rbp rbx s)
+                                                                           (r12 r13 r14 r15 rbp rbx)
+                                                                           (r12 r13 r14 r15 rbp rbx)
+                                                                           (a r12 r13 r14 r15 rbp rbx)
+                                                                           (r12 r13 r14 r15 rbp rbx s)
+                                                                           (r12 r13 r14 r15 rbp rbx s)
+                                                                           (r12 r13 r14 r15 rax rbp rbx))
+
+                                                                          ((r12 r13 r14 r15 rbp rbx s)
+                                                                          (r12 r13 r14 r15 rbp rbx s)
+                                                                          (r12 r13 r14 r15 rbp rbx)
+                                                                          (a r12 r13 r14 r15 rbp rbx)
+                                                                          ()
+                                                                          (r12 r13 r14 r15 rbp rbx s)
+                                                                          (r12 r13 r14 r15 rax rbp rbx)
+                                                                          ())))
+
+  ;; test robby's 69f. Doesn't make sense since out = union of in sets of successors
+  (test-in-outs (parse-function `(:f 3 0 
+                                     (call array-error 2) 
+                                     (call array-error 2)))       `(((rdi rsi) (rdi rsi)) (() ())))
+                                
   (debug-print "Finished in out tests"))
 
 
-
+#|
 ;; tests the search for label and successors functions
 (module+ test
   (require rackunit)
@@ -214,7 +345,7 @@
   
   (debug-print "Finished gen-kill tests\n\n"))
 
-
+|#
 
 (define TEST-FUNC  (parse-function `(:go 1 0
                                          (x2 <- rdi) 
@@ -300,3 +431,4 @@
                                                  (x <- 1)
                                                  (x += 1)
                                                  (goto :top))))
+
