@@ -9,8 +9,7 @@
   (when print-debug (printf "given:    ~a\nexpected: ~a\n\n" (first args) (last args)))
   (apply proc args))
 
-(define (debug-print str . args)
-  (when print-debug (apply printf (append (list str) args))))
+  
 
 
 

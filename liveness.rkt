@@ -1,7 +1,7 @@
 #lang racket
 
 (require "AST.rkt" "parser.rkt")
-(provide liveness-analysis generate-in-out generate-gen-kill generate-successors search-for-label-instr)
+(provide liveness-analysis generate-in-out generate-gens-kills generate-gen-kill generate-successors search-for-label-instr generate-liveness-info)
 
 
 ;;;;;;;;;;;;;;;;;;; DISPLAY-HELPERS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -17,6 +17,17 @@
   (printf "\n\n\n"))
 
 ;;;;;;;;;;;;;;;;;;; LIVENESS-ANALYSIS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (generate-liveness-info function-ast)
+  (let* ([gen-kills    (map generate-gen-kill (AST-children function-ast))]
+         [gens         (map (lambda (gen-kill) (first gen-kill)) gen-kills)]
+         [kills        (map (lambda (gen-kill) (second gen-kill)) gen-kills)]
+         [successors   (generate-successors function-ast)]
+         [ins-outs     (generate-in-out gens kills successors)]
+         [ins          (first ins-outs)]
+         [outs         (second ins-outs)])
+    (make-hash `((gens . ,gens) (kills . kills) (successors . ,successors) (ins . ,ins) (outs . outs)))))
+
+
 
 ;; string -> listof(gensets killsets successorslists insets outsets)
 (define (liveness-analysis function-ast)
@@ -37,12 +48,10 @@
 (define (generate-in-out gens kills successors)
   ;; helpers to build the sets
   (define (make-in gen out kill)
-    (printf "make-in:\ngen:\n~a\nkill:~a\nout:~a\n\n" gen kill out)
     (set-union gen (set-subtract out kill)))
   (define (make-out successor-ins)
     (apply set-union successor-ins))
 
-  (printf "gens:\n~a\nkills:~a\n\n" gens kills)
   ;;keeps track of
   (let* ([num-insts    (length gens)]
          [empty-setter (lambda (x) (set))]
@@ -52,9 +61,7 @@
     ;; loop until not changed
     (for  ([i (in-naturals)] ;; i in naturals basically means forever
            #:break (not changed))
-          (printf "ins:\n~a\nouts:\n~a\n\n" ins outs)
           (let ([changed-this-round #f])
-            ;(printf "initial: ~a\n" changed-this-round)
             ;; make ins by gen[i] union (out[i] - kill[i])
             (set! ins
                   (for/list ([inst-num (range num-insts)])
@@ -62,9 +69,6 @@
                                   [new-in  (make-in  (list-ref gens inst-num)
                                                      (list-ref outs inst-num)
                                                      (list-ref kills inst-num))])
-                              ;(printf "Instruction ~a:\nGen:  ~a\nOut:   ~a\nKill:~a\nNew-In: ~a\n\n" inst-num (list-ref gens inst-num)
-                              ;                      (list-ref outs inst-num)
-                              ;                      (list-ref kills inst-num) new-in)
                               (set! changed-this-round (not (= in-length-before (set-count new-in))))
                               new-in)))
             ;; make out set by Union in[m] where m is a successor of instruction[i]
@@ -79,8 +83,6 @@
                                    (set! changed-this-round (or changed-this-round (not (= out-length-before (set-count new-out)))))
                                    new-out)))
             (set! changed changed-this-round))
-           ;(printf "changed: ~a changed-this-round: ~a\n\n" changed changed-this-round))
-         ;(print-sets ins outs)
           )
     (list ins outs)))
 
@@ -131,6 +133,12 @@
 
 ;;;;;;;;;;;;;;;;;;; GEN KILL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define (generate-gens-kills function-ast)
+  (let* ([gen-kills    (map generate-gen-kill (AST-children function-ast))]
+         [gens         (map (lambda (gen-kill) (first gen-kill)) gen-kills)]
+         [kills        (map (lambda (gen-kill) (second gen-kill)) gen-kills)])
+    (list gens kills)))
+
 ;; AST(instruction) -> listof (setof symbol? (gens)  setof symbol? (kills))
 (define (generate-gen-kill i-ast)
   (let* ([c-data               (get-token-children-data i-ast)]
@@ -170,6 +178,16 @@
                                     [t2-tracked (set t2)]
                                     [else (set)])
                                   (set (first c-data))))]
+
+        ;; w must be tracked. It is being killed
+        ['memstack2w   (let  ([w-tracked? (is-tracked? (ast-child i-ast 0))]
+                              [w          (first c-data)])
+
+                         (list (set)
+                               (set w)))]
+                   
+                              
+                              
         ;; gen w (left). if t is tracked, gen. Kill w
         ['aop        (let  ([t2-tracked (is-tracked? (ast-child i-ast 2))]
                             [t1 (first c-data)]
@@ -208,7 +226,7 @@
         ['tail-call   (func-call-gen-kill #t #f (ast-child i-ast 0) (last c-data))]
         ;; do return
         ['return      (func-call-gen-kill #f #t (AST 'num '(0) '()) 0)]
-        [_            (lambda () (error "generate-gen-kill: could not understand ~a" i-ast))])))
+        [_            (error "generate-gen-kill: could not understand ~a" i-ast)])))
 
 
 ;; Handles the call instructions 

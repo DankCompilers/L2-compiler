@@ -4,8 +4,7 @@
 (provide ast-to-string)
 
 ;; AST -> string
-(define/contract (ast-to-string an-ast)
-  (-> AST? string?)
+(define (ast-to-string an-ast)
   ;; string listof(symbols) -> string 
   (define (handle-general-case f-str args)
     (apply format (cons f-str (map ast-to-string args))))
@@ -28,7 +27,8 @@
         ;; handle assignment nodes
         [(or 'mems2w
              'memmem2w
-             'mems2mem)        (handle-general-case "(~a <- ~a)"  children)]
+             'mems2mem
+             'memstack2w)        (handle-general-case "(~a <- ~a)"  children)]
         ['memcmp2w             (handle-general-case "(~a <- ~a ~a ~a)" children)]
         ;; handle arithmetic ops
         [(or 'aop
@@ -45,7 +45,7 @@
         ['return                "(return)"]
         ;; handle compound token nodes
         ['mem                  (handle-general-case "(mem ~a ~a)" children)]
-        ['stack                (handle-general-case "(stack ~a)" children)]
+        ['stack                (handle-general-case "(stack-arg ~a)" children)]
         ;; handle token nodes - return their data
         [(or 'num
              'label
@@ -54,4 +54,4 @@
              'aopop
              'sopop)              (to-string (get-first-data an-ast))]
         [_                      (if (is-reg-node? an-ast) (to-string (get-first-data an-ast))
-                                    (error "ast-to-string: could not understand ~a" an-ast))])))
+                                    (error "ast-to-string: could not understand " an-ast))])))

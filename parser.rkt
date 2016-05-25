@@ -108,7 +108,7 @@
                                                                  (AST 'tail-call '() (parse-tokens u nat) )
                                                                  (lambda () (error "tail call with invalid arity")))]
       [`(return)                                              (AST 'return '() '() )]
-      [_ (lambda () (error "instruction did not match any cases"))]))
+      [_  (error "parse-instruction: instruction did not match any cases")]))
 
 
 

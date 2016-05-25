@@ -2,3 +2,4 @@
 .DS_STORE
 compiled
 *_testing*
+tests

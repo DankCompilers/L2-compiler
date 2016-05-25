@@ -3,7 +3,7 @@
 
 (require "spill.rkt" "parser.rkt")
 
-(define print-debug #f)
+(define print-debug #t)
 
 (define (debug-printer proc . args)
   (when print-debug (printf "given:    ~a\nexpected: ~a\n\n" (first args) (last args)))
@@ -20,10 +20,53 @@
     (set! current-one (+ current-one 1))
     (string->symbol (format "s~a" current-one)))
     
+  (define (test-spill-function quoted-func var-name prefix quoted-expected)
+    (let* ([func-ast    (parse-function quoted-func)]
+           [gens-kills  (generate-gens-kills func-ast)]
+           [gens        (first gens-kills)]
+           [kills       (second gens-kills)])
+      (debug-printer check-equal?
+                   (spill-function var-name prefix func-ast gens kills) 
+                   (parse-function quoted-expected))))
+
+  ;; test spill functions
+  (test-spill-function `(:f 0 0
+                            (x <- 4)
+                            (x <- x)
+                            (rax <- x))
+                       'x
+                       's_
+                       `(:f 0 1
+                            ((mem rsp 0) <- 4)
+                            (rax <- (mem rsp 0))))
+
+  (test-spill-function `(:f 7 0
+                            (x <- (stack-arg 0))
+                            (rax <- x))
+                       'y
+                       's_
+                       `(:f 7 1
+                            (x <- (stack-arg 0))
+                            (rax <- x)))
+
+  
+  )
+
+
+(module+ test
+  (require rackunit)
+  (require "liveness.rkt")
+
+  ;; used to generate unique temps
+  (define current-one2 -1)
+  (define (next-temp2)
+    (set! current-one (+ current-one 1))
+    (string->symbol (format "s~a" current-one)))
+    
   (define (test-spill-instruction quoted-inst var-name quoted-expected)
     (let* ([i-ast    (parse-instruction quoted-inst)]
            [gen-kill (generate-gen-kill i-ast)])
-    (debug-printer check-equal? (spill-instruction var-name 8 next-temp i-ast (first gen-kill) (second gen-kill))
+    (debug-printer check-equal? (spill-instruction var-name 8 next-temp2 i-ast (first gen-kill) (second gen-kill))
                    (map parse-instruction quoted-expected))))
 
   ;; test assignments
@@ -98,5 +141,6 @@
   (test-spill-instruction `(call allocate 2) 'allocate  `((call allocate 2)))
   (test-spill-instruction `(call array-error 2) 'p  `((call array-error 2)))
   (test-spill-instruction `(return) 'return  `((return)))
-  )
+  ) 
+
 
