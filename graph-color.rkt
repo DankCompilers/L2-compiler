@@ -39,7 +39,10 @@
   ;; colored-graph id -> id
   (define (choose-color colored-graph id)
     (let ([choices (set-subtract all-registers (get-neighbors-colors colored-graph id))])
-      (set-first choices)))
+      ;(printf "choices:\n~a\n" choices)
+      (if (set-empty? choices)
+          #f
+          (set-first choices))))
   
   ;; for each node, if it's a register, color it as itself. Else, put false as uncolored.
   (define (get-initial-colored-graph to-allocate)
@@ -149,14 +152,19 @@ in the first instruction’s ‘in’ set |#
                [kill   (list-ref kills i)]
                [i-ast  (list-ref instructions i)])
            ;(println "***************************")
-           ;(printf "in: ~a\nout: ~a\nkill: ~a\ni-ast: ~a\n\n" in out kill i-ast)
+           ;(printf "in: ~a\nout: ~a\nkill: ~a\ni-ast ~a: ~a\n\n" in out kill i i-ast)
            ;(print-hash graph)
            (match (AST-type i-ast)
-             ['mems2w    (cond
+             ['mems2w    ;(cond
                            ;; handles that two variables don't interfere with each other
-                           [(and (is-var-node? (get-first-child i-ast)) (is-var-node? (get-second-child i-ast)))
+                         ;  [(and (is-var-node? (get-first-child i-ast)) (is-var-node? (get-second-child i-ast)))
+              ;(println "Handling mems2w")
                             (let*   ([w    (get-first-data (get-first-child i-ast))]
-                                     [s    (get-first-data (get-first-child i-ast))])
+                                     [s    (get-first-data (get-second-child i-ast))])
+                              ;(printf "w: ~a  in-without-w: ~a\n" w (set-remove in w))
+                              ;(printf "w: ~a  out-without-w: ~a\n" w (set-remove out w))
+                              ;(printf "s: ~a  in-without-s: ~a\n" s (set-remove in s))
+                              ;(printf "s: ~a  out-without-s: ~a\n" s (set-remove out s))
                               (when (= i 0)
                                 (set! graph (add-interferences-within graph (set-remove in s)))
                                 (set! graph (add-interferences-within graph (set-remove in w))))
@@ -164,18 +172,22 @@ in the first instruction’s ‘in’ set |#
                               (set! graph (add-interferences-within graph (set-remove out s)))
                               (set! graph (add-interferences-within graph (set-remove out w)))
                               (for ([a-kill kill])
-                                   (set! graph (add-interference graph a-kill (set-remove out s)))))]
-                           [else
-                            ;; everything in out set conflicts with each other in first instruction
-                            (when (= i 0) (set! graph (add-interferences-within graph in)))
-                            ;; everything in out set conflicts with each other
-                            (set! graph (add-interferences-within graph out))
-                            (for ([a-kill kill])
-                                 (set! graph (add-interference graph a-kill out)))])] 
+                                   (set! graph (add-interference graph a-kill (set-remove out s)))))
+                            ]
              ;; handles that only rcx can be used
-             ['sopsx    (let ([shifter (second (get-token-children-data i-ast))])
-                          (when (not (symbol=? shifter 'rcx))
-                            (add-interference graph (set))))]
+             ['sopsx    (let* ([var-shifter?   (is-var-node? (ast-child i-ast 2))]
+                               [c-data         (get-token-children-data i-ast)]
+                               [shifter        (third c-data)]
+                               [w              (first  c-data)])
+                          ;(printf "var?: ~a w: ~a  shifter: ~a\n" var-shifter? w shifter)
+                          (when var-shifter?
+                            (set! graph (add-interference graph shifter (set-remove all-registers 'rcx)))))
+                          (when (= i 0)  (set! graph (add-interferences-within graph in)))
+                          ;; everything in out set conflicts with each other
+                          (set! graph (add-interferences-within graph out))
+                          (set! graph (add-interferences-within graph out))
+                          (for ([a-kill kill])
+                               (set! graph (add-interference graph a-kill (set-remove out 'rcx))))]
              [else    (when (= i 0) (set! graph (add-interferences-within graph in)))
                       ;; everything in out set conflicts with each other
                       (set! graph (add-interferences-within graph out))

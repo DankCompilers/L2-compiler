@@ -37,6 +37,8 @@
 
       ;(printf "colored graph:\n~a\n" colored-graph)
       (printf "variables graph:\n~a\n" var-colored-graph)
+      (for ([i (range (length expected))])
+           (debug-printer check-equal? (list-ref adjacency-graph i) (list-ref expected i)))
       ;(debug-printer check-equal? adjacency-graph expected)
       
       ))
@@ -44,7 +46,7 @@
   (println "Testing generating the graphs")
 
   
-  (test-generate-graph `(:f
+  #|(test-generate-graph `(:f
                          3
                          0
                          (rax <- s1)
@@ -94,6 +96,59 @@
                          (rdx r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rsi)
                          (rsi r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx)
                          (x r12 r13 r14 r15 rax rbp rbx)))
+
+  (println "*************** tests3.L2f *********************************")
+  (test-generate-graph `(:f 0 0 
+                            (x <- rdi)
+                            (a <- rsi)
+                            (rax += rdi)
+                            (rsi <- 3)
+                            (return))
+                       `((a r12 r13 r14 r15 rax rbp rbx rdi)
+                         (r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi)
+                         (r11 r10 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi)
+                         (r12 a r10 r11 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi x)
+                         (r13 a r10 r11 r12 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi x)
+                         (r14 a r10 r11 r12 r13 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi x)
+                         (r15 a r10 r11 r12 r13 r14 r8 r9 rax rbp rbx rcx rdi rdx rsi x)
+                         (r8 r10 r11 r12 r13 r14 r15 r9 rax rbp rbx rcx rdi rdx rsi)
+                         (r9 r10 r11 r12 r13 r14 r15 r8 rax rbp rbx rcx rdi rdx rsi)
+                         (rax a r10 r11 r12 r13 r14 r15 r8 r9 rbp rbx rcx rdi rdx rsi x)
+                         (rbp a r10 r11 r12 r13 r14 r15 r8 r9 rax rbx rcx rdi rdx rsi x)
+                         (rbx a r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rcx rdi rdx rsi x)
+                         (rcx r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rdi rdx rsi)
+                         (rdi a r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdx rsi)
+                         (rdx r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rsi)
+                         (rsi r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx x)
+                         (x r12 r13 r14 r15 rax rbp rbx rsi)))
+|#
+
+
+  (test-generate-graph `(:f 1 0
+                            (x <- rdi)
+                            (y <- 1)
+                            (y <<= x)
+                            (x <<= y)
+                            (rax <- x)
+                            (return))
+                       `((r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi x y)
+                          (r11 r10 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi x y)
+                          (r12 r10 r11 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi x y)
+                          (r13 r10 r11 r12 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi x y)
+                          (r14 r10 r11 r12 r13 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi x y)
+                          (r15 r10 r11 r12 r13 r14 r8 r9 rax rbp rbx rcx rdi rdx rsi x y)
+                          (r8 r10 r11 r12 r13 r14 r15 r9 rax rbp rbx rcx rdi rdx rsi x y)
+                          (r9 r10 r11 r12 r13 r14 r15 r8 rax rbp rbx rcx rdi rdx rsi x y)
+                          (rax r10 r11 r12 r13 r14 r15 r8 r9 rbp rbx rcx rdi rdx rsi x y)
+                          (rbp r10 r11 r12 r13 r14 r15 r8 r9 rax rbx rcx rdi rdx rsi x y)
+                          (rbx r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rcx rdi rdx rsi x y)
+                          (rcx r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rdi rdx rsi)
+                          (rdi r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdx rsi x y)
+                          (rdx r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rsi x y)
+                          (rsi r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx x y)
+                          (x r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rdi rdx rsi y)
+                          (y r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rdi rdx rsi x)))
+                       
 
 
 
