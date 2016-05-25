@@ -26,6 +26,7 @@
 ;; string? -> string?
 (define (L2->L1-compile quoted-raw-L2)
   (let ([new-ast       (L2->L1 (parse-program quoted-raw-L2))])
+    ;(println new-ast)
     (if (AST? new-ast)
         (ast-to-string new-ast)
         new-ast)))
@@ -48,8 +49,9 @@
                                     (let ([new-func-ast   (first analysis)]
                                           [colored-graph  (second analysis)])
                                       (process-func-ast new-func-ast colored-graph)))))])
+    
     (cond
-      [(not (empty? (filter (negate AST?) new-children))) (println "could not register allocate") "could not register allocate"]
+      [(not (empty? (filter (negate AST?) new-children))) #f]
         ;; replace the children (functions) with the transformed code
        [else (set-AST-children program-ast new-children)])))
 
@@ -57,26 +59,30 @@
 ;; Performs liveness analysis, register allocation, spilling, and then returns
 ;; a func ast that has the variable ID's replaced with their register
 ;; func-AST ->listof(func-ast colored-graph)/string
-(define (analyze-func-ast func-ast)
-  (println "Analyzing function")
-  (let* ([liveness-data  (generate-liveness-info func-ast)]
-         [gens           (hash-ref liveness-data 'gens)]
-         [kills          (hash-ref liveness-data 'kills)]
-         [successors     (hash-ref liveness-data 'successors)]
-         [ins            (hash-ref liveness-data 'ins)]
-         [outs           (hash-ref liveness-data 'outs)]
-         [colored-graph  (allocate-function func-ast ins outs kills)]
-         )
-    (println colored-graph)
-    (match colored-graph
-      ;; graph is a variable id to spill, so spill it and reanalyze
-      [(? symbol?)     (analyze-func-ast (spill-function colored-graph spill-prefix func-ast gens kills))]
-      ;; successfully colored graph
-      [(? hash?)       (list func-ast colored-graph)]
-      ;; impossible to allocate function
-      [(? boolean?)    "could not register allocate"])
-    )
-  )
+(define (analyze-func-ast og-func-ast)
+  (define (analyze-process func-ast last-spill)
+    ;(println "Analyzing function")
+    (let* ([liveness-data  (generate-liveness-info func-ast)]
+           [gens           (hash-ref liveness-data 'gens)]
+           [kills          (hash-ref liveness-data 'kills)]
+           [successors     (hash-ref liveness-data 'successors)]
+           [ins            (hash-ref liveness-data 'ins)]
+           [outs           (hash-ref liveness-data 'outs)]
+           [colored-graph  (allocate-function func-ast ins outs kills)]
+           )
+      ;(println (ast-to-string func-ast))
+      ;(println colored-graph)
+      ;(printf "\n\n")
+      (match colored-graph
+        ;; graph is a variable id to spill, so spill it and reanalyze
+        [(? symbol?)     (if (equal? last-spill colored-graph)
+                              #f
+                             (analyze-process (spill-function colored-graph spill-prefix func-ast gens kills) colored-graph))]
+        ;; successfully colored graph
+        [(? hash?)       (list func-ast colored-graph)]
+        ;; impossible to allocate function
+        [(? boolean?)    #f])))
+  (analyze-process og-func-ast #f))
 
 
 

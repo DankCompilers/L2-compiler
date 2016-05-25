@@ -8,6 +8,9 @@
  (cond [filename
         (call-with-input-file filename
           (lambda (in)
-              (write  (read (open-input-string (L2->L1-compile (read in)))))))]
+            (let    ([l1-code (L2->L1-compile (read in))])
+              (if (boolean? l1-code)
+                  (write "could not register allocate")
+                  (write  (read (open-input-string l1-code)))))))]
        [else (error "Provide a filename")]))
 

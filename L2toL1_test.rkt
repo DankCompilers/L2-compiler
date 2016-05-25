@@ -3,7 +3,7 @@
 
 (require "L2toL1.rkt")
 
-(define print-debug #t)
+(define print-debug #f)
 
 (define (debug-printer proc . args)
   (when print-debug (printf "given:    ~a\nexpected: ~a\n\n" (first args) (last args)))
@@ -16,7 +16,7 @@
   (require rackunit)
 
   (define (test-L2->L1 raw-prog)
-    (debug-print "~a\n" (read (open-input-string (L2->L1-compile raw-prog))))
+    (print  (L2->L1-compile raw-prog))
     ;(debug-printer check-equal? (L2->L1-compile raw-prog) expected-string)
     )
 
