@@ -121,7 +121,7 @@
                          (rdx r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rsi)
                          (rsi r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx x)
                          (x r12 r13 r14 r15 rax rbp rbx rsi)))
-|#
+
 
 
   (test-generate-graph `(:f 1 0
@@ -148,6 +148,31 @@
                           (rsi r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx x y)
                           (x r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rdi rdx rsi y)
                           (y r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rdi rdx rsi x)))
+|#
+
+  (test-generate-graph `(:f 1 0
+                            (x <- rdi)
+                            (rdi <- 5)
+                            (rsi <- 7)
+                            (call print 1)
+                            (call array-error 2) 
+                            (return))
+                       `((r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi)
+                        (r11 r10 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi)
+                        (r12 r10 r11 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi)
+                        (r13 r10 r11 r12 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi)
+                        (r14 r10 r11 r12 r13 r15 r8 r9 rax rbp rbx rcx rdi rdx rsi)
+                        (r15 r10 r11 r12 r13 r14 r8 r9 rax rbp rbx rcx rdi rdx rsi)
+                        (r8 r10 r11 r12 r13 r14 r15 r9 rax rbp rbx rcx rdi rdx rsi)
+                        (r9 r10 r11 r12 r13 r14 r15 r8 rax rbp rbx rcx rdi rdx rsi)
+                        (rax r10 r11 r12 r13 r14 r15 r8 r9 rbp rbx rcx rdi rdx rsi)
+                        (rbp r10 r11 r12 r13 r14 r15 r8 r9 rax rbx rcx rdi rdx rsi)
+                        (rbx r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rcx rdi rdx rsi)
+                        (rcx r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rdi rdx rsi)
+                        (rdi r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdx rsi)
+                        (rdx r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rsi)
+                        (rsi r10 r11 r12 r13 r14 r15 r8 r9 rax rbp rbx rcx rdi rdx)
+                        (x)))
                        
 
 

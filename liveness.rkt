@@ -25,7 +25,7 @@
          [ins-outs     (generate-in-out gens kills successors)]
          [ins          (first ins-outs)]
          [outs         (second ins-outs)])
-    (make-hash `((gens . ,gens) (kills . kills) (successors . ,successors) (ins . ,ins) (outs . outs)))))
+    (make-hash `((gens . ,gens) (kills . ,kills) (successors . ,successors) (ins . ,ins) (outs . ,outs)))))
 
 
 
