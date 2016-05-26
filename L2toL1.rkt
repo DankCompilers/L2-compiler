@@ -95,17 +95,25 @@
     (cond
       [(is-var-node? a-ast)          (parse-token (hash-ref colored-graph (get-first-data a-ast)))]
       [else                          (set-AST-children a-ast (map replace-variables (AST-children a-ast)))]))
-  (set-AST-children func-ast
-                    ;; iterates through instruction AST's and replaces the ID's, and changes memstack2w to memmem2w
-                    (for/list ([i-ast (AST-children func-ast)])
-                              (let ([replaced-ast   (replace-variables i-ast)])
-                                (if (is-memstack-node? replaced-ast)
-                                    (stack-to-mem-node replaced-ast)
-                                    replaced-ast)))))
+  (let* ([arity      (second (AST-data func-ast))]
+         [num-locals (third  (AST-data  func-ast))]
+         [spillage   (* 8 num-locals)])
+    (set-AST-children func-ast
+                      ;; iterates through instruction AST's and replaces the ID's, and changes memstack2w to memmem2w
+                      (for/list ([i-ast (AST-children func-ast)])
+                                (let ([replaced-ast   (replace-variables i-ast)])
+                                  (if (is-memstack-node? replaced-ast)
+                                      (memstack-to-mem-node replaced-ast spillage)
+                                      replaced-ast))))))
 
 
 ;; Converts a stack-ast to it's equivalent mem-ast
 ;; stack-ast -> mem-ast
-(define (stack-to-mem-node stack-ast)
-  (define base-x (parse-token 'rsp))
-  (AST 'mem '() (list base-x (get-first-child stack-ast))))
+(define (memstack-to-mem-node memstack-ast spillage)
+  (let* ([base-x         (parse-token 'rsp)]
+         [newtype        'memmem2w]
+         [stack-ast      (get-second-child memstack-ast)]
+         [n8             (get-first-data (get-first-child stack-ast))]
+         [offset-ast     (parse-token (+ n8 spillage))]
+         [mem-replace    (AST 'mem empty (list base-x offset-ast))])
+    (AST newtype empty (list (get-first-child memstack-ast) mem-replace))))

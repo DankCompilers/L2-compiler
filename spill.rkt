@@ -94,7 +94,7 @@
                                    [replace-w?             `(,(replace-child i-ast 0 temp-ast)
                                                              ,(write-temp temp-name))]))]
           ['mems2mem       (let* ([s              (get-first-data (get-second-child i-ast))]
-                                  [replace-s?     (symbol=? s var-name)]
+                                  [replace-s?     (and (symbol? s) (symbol=? s var-name))]
                                   [mem-node       (get-first-child i-ast)]
                                   [mem-x          (get-first-data (get-first-child mem-node))]
                                   [replace-mem?   (symbol=? mem-x var-name)])
